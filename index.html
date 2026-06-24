@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>South Florida RFP Bid Board</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f6f6f4; --bg3: #efefec;
+    --text: #1a1a18; --text2: #5f5e5a; --text3: #a0a09a;
+    --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
+    --blue-bg: #E6F1FB; --blue-border: #85B7EB; --blue-text: #0C447C;
+    --green-bg: #EAF3DE; --green-border: #97C459; --green-text: #27500A;
+    --amber-bg: #FAEEDA; --amber-border: #FAC775; --amber-text: #633806;
+    --red-bg: #FCEBEB; --red-border: #F7C1C1; --red-text: #791F1F;
+    --pb-bg: #EEEDFE; --pb-text: #3C3489;
+    --br-bg: #E1F5EE; --br-text: #085041;
+    --md-bg: #FAECE7; --md-text: #712B13;
+    --radius: 8px; --radius-lg: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1e1e1c; --bg2: #282825; --bg3: #323230;
+      --text: #f0efea; --text2: #a8a8a0; --text3: #6a6a62;
+      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
+      --blue-bg: #0c2d4a; --blue-border: #185FA5; --blue-text: #85B7EB;
+      --green-bg: #142a08; --green-border: #3B6D11; --green-text: #97C459;
+      --amber-bg: #2a1a04; --amber-border: #854F0B; --amber-text: #FAC775;
+      --red-bg: #2a0c0c; --red-border: #A32D2D; --red-text: #F09595;
+      --pb-bg: #1e1a40; --pb-text: #AFA9EC;
+      --br-bg: #0a2218; --br-text: #5DCAA5;
+      --md-bg: #2a1208; --md-text: #F0997B;
+    }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); font-size: 14px; line-height: 1.5; min-height: 100vh; }
+  .topbar { background: var(--bg); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
+  .topbar-left { display: flex; align-items: center; gap: 10px; }
+  .logo { font-size: 15px; font-weight: 600; color: var(--text); }
+  .logo span { color: var(--blue-text); }
+  .topbar-sub { font-size: 12px; color: var(--text3); }
+  .topbar-right { display: flex; gap: 8px; align-items: center; }
+  .main { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+  .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 20px; }
+  .stat-card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; }
+  .stat-lbl { font-size: 11px; color: var(--text3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .stat-val { font-size: 26px; font-weight: 600; }
+  .stat-val.blue { color: var(--blue-text); }
+  .stat-val.green { color: var(--green-text); }
+  .stat-val.amber { color: var(--amber-text); }
+  .stat-val.red { color: var(--red-text); }
+  .panel { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 16px; }
+  .panel-title { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+  .sources-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .src-chip { font-size: 11px; padding: 3px 10px; border-radius: 20px; background: var(--green-bg); border: 1px solid var(--green-border); color: var(--green-text); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; }
+  .src-chip:hover { opacity: 0.8; }
+  .controls { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .pill { border: 1px solid var(--border); border-radius: 20px; padding: 5px 13px; font-size: 12px; cursor: pointer; background: var(--bg); color: var(--text2); transition: all 0.15s; white-space: nowrap; }
+  .pill:hover { border-color: var(--border2); }
+  .pill.active { background: var(--blue-bg); border-color: var(--blue-border); color: var(--blue-text); font-weight: 500; }
+  .search-input { border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 12px; font-size: 13px; background: var(--bg); color: var(--text); flex: 1; min-width: 180px; max-width: 280px; }
+  .search-input:focus { outline: none; border-color: var(--blue-border); }
+  .sort-select { border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 10px; font-size: 12px; background: var(--bg); color: var(--text2); cursor: pointer; }
+  .btn { border: 1px solid var(--border2); border-radius: var(--radius); padding: 7px 14px; font-size: 12px; cursor: pointer; background: var(--bg); color: var(--text2); display: inline-flex; align-items: center; gap: 6px; font-family: inherit; transition: all 0.15s; white-space: nowrap; }
+  .btn:hover { background: var(--bg2); }
+  .btn.primary { background: var(--blue-bg); border-color: var(--blue-border); color: var(--blue-text); font-weight: 500; }
+  .btn.primary:hover { opacity: 0.85; }
+  .btn.danger { background: var(--red-bg); border-color: var(--red-border); color: var(--red-text); }
+  .alert-banner { border-radius: var(--radius); padding: 11px 16px; margin-bottom: 14px; font-size: 13px; display: flex; align-items: center; gap: 10px; }
+  .alert-urgent { background: var(--red-bg); border: 1px solid var(--red-border); color: var(--red-text); }
+  .alert-info { background: var(--green-bg); border: 1px solid var(--green-border); color: var(--green-text); }
+  .card { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 12px; transition: border-color 0.15s; }
+  .card:hover { border-color: var(--border2); }
+  .card.dec-yes { border-left: 4px solid #639922; }
+  .card.dec-maybe { border-left: 4px solid #EF9F27; }
+  .card.dec-no { border-left: 4px solid #E24B4A; opacity: 0.7; }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 8px; }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; line-height: 1.4; }
+  .badges { display: flex; gap: 5px; flex-wrap: wrap; flex-shrink: 0; }
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
+  .badge-open { background: var(--blue-bg); border: 1px solid var(--blue-border); color: var(--blue-text); }
+  .badge-hot { background: var(--red-bg); border: 1px solid var(--red-border); color: var(--red-text); }
+  .badge-soon { background: var(--amber-bg); border: 1px solid var(--amber-border); color: var(--amber-text); }
+  .badge-pb { background: var(--pb-bg); color: var(--pb-text); }
+  .badge-br { background: var(--br-bg); color: var(--br-text); }
+  .badge-md { background: var(--md-bg); color: var(--md-text); }
+  .card-meta { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 8px; }
+  .meta { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 5px; }
+  .meta svg { opacity: 0.6; flex-shrink: 0; }
+  .deadline-pill { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+  .dl-ok { background: var(--green-bg); color: var(--green-text); }
+  .dl-soon { background: var(--amber-bg); color: var(--amber-text); }
+  .dl-hot { background: var(--red-bg); color: var(--red-text); }
+  .card-dates { display: flex; flex-wrap: wrap; gap: 10px 20px; margin-bottom: 8px; padding: 8px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .date-row { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 5px; }
+  .date-lbl { font-weight: 600; color: var(--text); font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; min-width: 80px; }
+  .date-val { color: var(--text2); }
+  .date-not-spec { color: var(--text3); font-style: italic; }
+  .badge-mandatory { background: var(--red-bg); color: var(--red-text); font-size: 10px; padding: 1px 7px; border-radius: 20px; font-weight: 600; border: 1px solid var(--red-border); }
+  .badge-optional { background: var(--green-bg); color: var(--green-text); font-size: 10px; padding: 1px 7px; border-radius: 20px; font-weight: 600; border: 1px solid var(--green-border); }
+  .card-desc { font-size: 12px; color: var(--text2); line-height: 1.6; margin-bottom: 8px; }
+  .card-source { font-size: 11px; color: var(--text3); margin-bottom: 10px; }
+  .card-actions { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .dec-btns { display: flex; gap: 6px; }
+  .dec-btn { border: 1px solid var(--border); border-radius: var(--radius); padding: 5px 12px; font-size: 12px; cursor: pointer; background: var(--bg); color: var(--text2); display: flex; align-items: center; gap: 4px; font-family: inherit; transition: all 0.15s; }
+  .dec-btn:hover { border-color: var(--border2); background: var(--bg2); }
+  .dec-btn.active-yes { background: var(--green-bg); border-color: var(--green-border); color: var(--green-text); font-weight: 500; }
+  .dec-btn.active-maybe { background: var(--amber-bg); border-color: var(--amber-border); color: var(--amber-text); font-weight: 500; }
+  .dec-btn.active-no { background: var(--red-bg); border-color: var(--red-border); color: var(--red-text); font-weight: 500; }
+  .card-links { display: flex; gap: 12px; align-items: center; }
+  .card-link { font-size: 12px; color: var(--blue-text); text-decoration: none; display: flex; align-items: center; gap: 4px; }
+  .card-link:hover { text-decoration: underline; }
+  .notes-row { margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px; }
+  .notes-lbl { font-size: 11px; color: var(--text3); margin-bottom: 5px; display: flex; align-items: center; gap: 5px; }
+  .btn-archive { border-color: var(--amber-border); color: var(--amber-text); }
+  .btn-archive:hover { background: var(--amber-bg); }
+  .btn-archive.active { background: var(--amber-bg); border-color: var(--amber-border); color: var(--amber-text); font-weight: 600; }
+  .arch-count { background: var(--amber-bg); color: var(--amber-text); border-radius: 20px; font-size: 10px; font-weight: 700; padding: 1px 6px; margin-left: 3px; }
+  .archive-banner { display: none; background: var(--amber-bg); border: 1px solid var(--amber-border); color: var(--amber-text); border-radius: var(--radius-lg); padding: 10px 16px; margin-bottom: 14px; font-size: 13px; font-weight: 500; align-items: center; justify-content: space-between; gap: 12px; }
+  .card-archived { border-left: 3px solid var(--amber-border); opacity: 0.82; }
+  .saved-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-text); opacity: 0; transition: opacity 0.4s; display: inline-block; }
+  .saved-dot.show { opacity: 1; }
+  .notes-input { width: 100%; border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 10px; font-size: 12px; font-family: inherit; color: var(--text); background: var(--bg2); resize: vertical; min-height: 52px; line-height: 1.5; }
+  .notes-input:focus { outline: none; border-color: var(--blue-border); }
+  .notes-input::placeholder { color: var(--text3); }
+  .empty { text-align: center; padding: 3rem; color: var(--text3); }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.hidden { display: none; }
+  .modal { background: var(--bg); border-radius: var(--radius-lg); padding: 24px; width: 100%; max-width: 540px; border: 1px solid var(--border); }
+  .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: var(--text); }
+  .form-row { margin-bottom: 12px; }
+  .form-lbl { font-size: 12px; color: var(--text2); margin-bottom: 4px; display: block; font-weight: 500; }
+  .form-input, .form-select, .form-textarea { width: 100%; border: 1px solid var(--border); border-radius: var(--radius); padding: 7px 10px; font-size: 13px; font-family: inherit; color: var(--text); background: var(--bg); }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--blue-border); }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--green-bg); border: 1px solid var(--green-border); color: var(--green-text); padding: 10px 18px; border-radius: var(--radius); font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.3s; z-index: 300; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .last-upd { font-size: 11px; color: var(--text3); text-align: center; padding: 12px; }
+  .scrape-bar { background: var(--blue-bg); border: 1px solid var(--blue-border); color: var(--blue-text); border-radius: var(--radius); padding: 8px 16px; margin-bottom: 14px; font-size: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+  .scrape-bar strong { font-weight: 600; }
+  @media (max-width: 700px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .topbar { height: auto; padding: 12px 16px; flex-direction: column; align-items: flex-start; gap: 8px; }
+    .card-top { flex-direction: column; }
+    .card-actions { flex-direction: column; align-items: flex-start; }
+  }
+  svg.icon { display: inline-block; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div>
+      <div class="logo">South Florida <span>RFP Bid Board</span></div>
+      <div class="topbar-sub">Palm Beach · Broward · Miami-Dade &nbsp;·&nbsp; Playgrounds, Splash Pads, Parks, Sports Complexes</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <button class="btn btn-archive" id="archive-toggle-btn" onclick="toggleArchive()">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+      Archive <span class="arch-count" id="arch-count">0</span>
+    </button>
+    <button class="btn" onclick="openModal()">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add opportunity
+    </button>
+    <button class="btn" onclick="exportCSV()">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export CSV
+    </button>
+    <button class="btn primary" onclick="exportYes()">
+      <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Export Yes list
+    </button>
+  </div>
+</div>
+
+<div class="main">
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-lbl">Total opportunities</div><div class="stat-val blue" id="s-total">0</div></div>
+    <div class="stat-card"><div class="stat-lbl">Bid yes</div><div class="stat-val green" id="s-yes">0</div></div>
+    <div class="stat-card"><div class="stat-lbl">Maybe</div><div class="stat-val amber" id="s-maybe">0</div></div>
+    <div class="stat-card"><div class="stat-lbl">Passed</div><div class="stat-val red" id="s-no">0</div></div>
+    <div class="stat-card"><div class="stat-lbl">Due within 14 days</div><div class="stat-val red" id="s-hot">0</div></div>
+  </div>
+
+  <div id="alert-area"></div>
+  <div id="scrape-bar" style="display:none" class="scrape-bar"></div>
+
+  <div class="panel">
+    <div class="panel-title">Live procurement sources — click any to open</div>
+    <div class="sources-grid">
+      <a class="src-chip" href="https://www.demandstar.com" target="_blank">&#x2197; DemandStar</a>
+      <a class="src-chip" href="https://www.bidsync.com" target="_blank">&#x2197; BidSync</a>
+      <a class="src-chip" href="https://www.bidnetdirect.com" target="_blank">&#x2197; BidNet Direct</a>
+      <a class="src-chip" href="https://vendor.myfloridamarketplace.com" target="_blank">&#x2197; MyFloridaMarketPlace</a>
+      <a class="src-chip" href="https://discover.pbcgov.org/Purchasing/Pages/Solicitations.aspx" target="_blank">&#x2197; Palm Beach County Purchasing</a>
+      <a class="src-chip" href="https://www.broward.org/Purchasing/Pages/Current-Solicitations.aspx" target="_blank">&#x2197; Broward County Purchasing</a>
+      <a class="src-chip" href="https://www.miamidade.gov/procurement/solicitations.asp" target="_blank">&#x2197; Miami-Dade Procurement</a>
+      <a class="src-chip" href="https://www.palmbeachschools.org/purchasing" target="_blank">&#x2197; SDPBC Purchasing</a>
+      <a class="src-chip" href="https://www.browardschools.com/purchasing" target="_blank">&#x2197; Broward County Schools</a>
+      <a class="src-chip" href="https://www.dadeschools.net/procurement" target="_blank">&#x2197; Miami-Dade County Schools</a>
+      <a class="src-chip" href="https://www.myboca.us/132/Purchasing" target="_blank">&#x2197; City of Boca Raton</a>
+      <a class="src-chip" href="https://www.wpb.org/government/departments/finance/purchasing" target="_blank">&#x2197; City of West Palm Beach</a>
+      <a class="src-chip" href="https://www.fortlauderdale.gov/departments/finance/purchasing" target="_blank">&#x2197; City of Fort Lauderdale</a>
+      <a class="src-chip" href="https://www.hollywoodfl.org/208/Purchasing" target="_blank">&#x2197; City of Hollywood</a>
+      <a class="src-chip" href="https://www.tamarac.org/302/Purchasing" target="_blank">&#x2197; City of Tamarac</a>
+      <a class="src-chip" href="https://www.cityofhomestead.com/215/Purchasing" target="_blank">&#x2197; City of Homestead</a>
+      <a class="src-chip" href="https://www.coralgables.com/departments/finance/procurement" target="_blank">&#x2197; City of Coral Gables</a>
+      <a class="src-chip" href="https://www.miamidade.gov/parks" target="_blank">&#x2197; Miami-Dade Parks Dept</a>
+      <a class="src-chip" href="https://discover.pbcgov.org/parks" target="_blank">&#x2197; Palm Beach County Parks</a>
+      <a class="src-chip" href="https://www.broward.org/Parks/Pages/Default.aspx" target="_blank">&#x2197; Broward County Parks</a>
+    </div>
+  </div>
+
+  <div class="controls">
+    <span class="pill active" onclick="setFilter('all',this)">All</span>
+    <span class="pill" onclick="setFilter('palm-beach',this)">Palm Beach</span>
+    <span class="pill" onclick="setFilter('broward',this)">Broward</span>
+    <span class="pill" onclick="setFilter('miami-dade',this)">Miami-Dade</span>
+    <span class="pill" onclick="setFilter('yes',this)">✓ Yes</span>
+    <span class="pill" onclick="setFilter('maybe',this)">~ Maybe</span>
+    <span class="pill" onclick="setFilter('no',this)">✕ Passed</span>
+    <span class="pill" onclick="setFilter('undecided',this)">Undecided</span>
+    <span class="pill" onclick="setFilter('hot',this)">🔥 Due ≤14 days</span>
+    <span class="pill" onclick="setFilter('mandatory-prebid',this)">Mandatory Pre-Bid</span>
+    <span class="pill" onclick="setFilter('prebid-week',this)">Pre-Bid This Week</span>
+    <span class="pill" onclick="setFilter('rfi-soon',this)">RFI Due Soon</span>
+    <input class="search-input" type="text" id="srch" placeholder="Search title, agency, RFP#..." oninput="render()">
+    <select class="sort-select" id="sort-sel" onchange="render()">
+      <option value="deadline">Sort: Deadline soonest</option>
+      <option value="deadline-latest">Sort: Deadline latest</option>
+      <option value="value">Sort: Est. value</option>
+      <option value="county">Sort: County</option>
+      <option value="added">Sort: Recently added</option>
+      <option value="prebid">Sort: Pre-bid date</option>
+      <option value="rfi">Sort: RFI deadline</option>
+    </select>
+  </div>
+
+  <div class="archive-banner" id="archive-banner">
+    <span>Viewing archived opportunities — these are hidden from the main board.</span>
+    <div style="display:flex;gap:8px;flex-shrink:0">
+      <button class="btn btn-archive" onclick="archiveAllExpired()" style="font-size:12px;padding:5px 12px">Archive all expired</button>
+      <button class="btn" onclick="toggleArchive()" style="font-size:12px;padding:5px 12px">← Back to board</button>
+    </div>
+  </div>
+  <div id="board"></div>
+  <div class="last-upd" id="last-upd"></div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-overlay" onclick="closeModalIfBg(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Add new opportunity</div>
+    <div class="form-row">
+      <label class="form-lbl">Project title *</label>
+      <input class="form-input" id="f-title" placeholder="e.g. Playground Equipment Replacement — Sunset Park">
+    </div>
+    <div class="form-row-2">
+      <div>
+        <label class="form-lbl">Agency / Issuing organization *</label>
+        <input class="form-input" id="f-agency" placeholder="e.g. City of Boca Raton">
+      </div>
+      <div>
+        <label class="form-lbl">County *</label>
+        <select class="form-select" id="f-county">
+          <option value="palm-beach">Palm Beach</option>
+          <option value="broward">Broward</option>
+          <option value="miami-dade">Miami-Dade</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row-2">
+      <div>
+        <label class="form-lbl">RFP / ITB / RFQ number</label>
+        <input class="form-input" id="f-rfp" placeholder="e.g. ITB-2025-067">
+      </div>
+      <div>
+        <label class="form-lbl">Deadline date *</label>
+        <input class="form-input" type="date" id="f-due">
+      </div>
+    </div>
+    <div class="form-row-2">
+      <div>
+        <label class="form-lbl">Project type</label>
+        <select class="form-select" id="f-type">
+          <option>Playground Equipment</option>
+          <option>Splash Pad</option>
+          <option>Park Construction</option>
+          <option>Sports Complex</option>
+          <option>Maintenance Contract</option>
+          <option>Design/Build</option>
+          <option>Equipment Supply</option>
+          <option>Installation</option>
+          <option>Remodel/Upgrade</option>
+          <option>Athletic Fields</option>
+          <option>Park Amenities</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div>
+        <label class="form-lbl">Estimated value</label>
+        <input class="form-input" id="f-value" placeholder="e.g. $450,000">
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">Description</label>
+      <textarea class="form-textarea" id="f-desc" rows="2" placeholder="Brief description of scope..."></textarea>
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">Source / Portal</label>
+      <input class="form-input" id="f-source" placeholder="e.g. DemandStar / Palm Beach County Purchasing">
+    </div>
+    <div class="form-row">
+      <label class="form-lbl">RFP URL</label>
+      <input class="form-input" id="f-url" placeholder="https://...">
+    </div>
+    <div class="modal-btns">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" id="modal-save-btn" onclick="saveOpportunity()">Save opportunity</button>
+      <button class="btn danger hidden" id="modal-delete-btn" onclick="deleteOpportunity()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Scraped bids injected by scrape_bids.py — run that script to populate live data -->
+<script src="bids_data.js" onerror="window.SCRAPED_BIDS=null"></script>
+<script>
+const STORAGE_KEY = 'sfla_bid_board_v1';
+const CN = {'palm-beach':'Palm Beach','broward':'Broward','miami-dade':'Miami-Dade'};
+
+const DEFAULT_OPS = [
+  {id:'op-001',title:'Playground Equipment Replacement — Sunset Park',agency:'City of Boca Raton Parks & Recreation',county:'palm-beach',rfpNumber:'ITB-2025-067-BR',dueDate:'2025-07-08',type:'Playground Equipment',value:'$185,000',description:'Removal of existing play structures and supply/installation of new age-appropriate playground equipment at Sunset Park. Includes safety surfacing, site prep, and ADA compliance upgrades.',source:'DemandStar / Boca Raton Purchasing',url:'https://www.myboca.us/132/Purchasing',addedAt:'2025-06-01'},
+  {id:'op-002',title:'Spanish River Park Splash Pad Construction',agency:'Palm Beach County Parks & Recreation',county:'palm-beach',rfpNumber:'RFP-2025-112-PBC',dueDate:'2025-07-22',type:'Splash Pad',value:'$620,000',description:'Design and construction of a new interactive splash pad facility at Spanish River Park including water play features, recirculation system, ADA-compliant pathways, and shade structures.',source:'Palm Beach County Purchasing Portal',url:'https://discover.pbcgov.org/Purchasing/Pages/Solicitations.aspx',addedAt:'2025-06-02'},
+  {id:'op-003',title:"Children's Sports Complex — Westgate Community Park",agency:'Palm Beach County Housing Authority',county:'palm-beach',rfpNumber:'RFQ-2025-044-PBC',dueDate:'2025-08-05',type:'Sports Complex',value:'$1.4M',description:"Full design-build for a children's multi-sport complex including two youth baseball fields, a basketball court, outdoor fitness stations, park lighting, and restroom facilities.",source:'MyFloridaMarketPlace / Palm Beach County',url:'https://vendor.myfloridamarketplace.com',addedAt:'2025-06-02'},
+  {id:'op-004',title:'Playground Renovation — 5 Elementary Schools',agency:'School District of Palm Beach County',county:'palm-beach',rfpNumber:'ITB 25-089E',dueDate:'2025-07-15',type:'Remodel/Upgrade',value:'$390,000',description:'Replacement of outdated playground structures at five SDPBC elementary schools. Scope includes demolition, grading, installation of new modular play systems, and engineered wood fiber safety surfacing.',source:'SDPBC Purchasing / DemandStar',url:'https://www.palmbeachschools.org/purchasing',addedAt:'2025-06-03'},
+  {id:'op-005',title:'Markham Park Athletic Fields & Playground Upgrade',agency:'Broward County Parks & Recreation',county:'broward',rfpNumber:'RFP-B-2025-178',dueDate:'2025-07-30',type:'Athletic Fields',value:'$875,000',description:'Renovation of two multi-use athletic fields with artificial turf, installation of new playground equipment adjacent to the fields, and ADA pathway improvements throughout Markham Park.',source:'Broward County Purchasing / BidSync',url:'https://www.broward.org/Purchasing/Pages/Current-Solicitations.aspx',addedAt:'2025-06-03'},
+  {id:'op-006',title:'Fort Lauderdale Riverwalk Splash Pad & Park Amenities',agency:'City of Fort Lauderdale',county:'broward',rfpNumber:'RFP 2025-213-CFL',dueDate:'2025-06-27',type:'Splash Pad',value:'$510,000',description:'Installation of a new splash pad and surrounding park amenities along the Fort Lauderdale Riverwalk including water feature equipment, control systems, hardscape, seating, and landscaping.',source:'City of Fort Lauderdale Purchasing / DemandStar',url:'https://www.fortlauderdale.gov/departments/finance/purchasing',addedAt:'2025-06-04'},
+  {id:'op-007',title:'Playground Equipment — 8 Broward County Schools',agency:'Broward County Public Schools',county:'broward',rfpNumber:'ITB 25-141V',dueDate:'2025-08-12',type:'Playground Equipment',value:'$560,000',description:'Supply and installation of new playground equipment at eight Broward County public schools including age-specific play structures, rubber safety surfacing, and site restoration.',source:'BCPS Purchasing / BidNet Direct',url:'https://www.browardschools.com/purchasing',addedAt:'2025-06-04'},
+  {id:'op-008',title:'Hollywood Hills Park — Pickleball & Basketball Courts',agency:'City of Hollywood',county:'broward',rfpNumber:'IFB-2025-088-HOL',dueDate:'2025-07-18',type:'Sports Complex',value:'$295,000',description:'Construction of four new pickleball courts and resurfacing of two existing basketball courts at Hollywood Hills Park, including fencing, lighting, and ADA-accessible viewing areas.',source:'City of Hollywood Purchasing / MyFloridaMarketPlace',url:'https://www.hollywoodfl.org/208/Purchasing',addedAt:'2025-06-05'},
+  {id:'op-009',title:'Tamarac Sports Complex — Playground & Fitness Trail',agency:'City of Tamarac',county:'broward',rfpNumber:'RFP 25-19B',dueDate:'2025-09-02',type:'Design/Build',value:'$740,000',description:'Design-build for expansion of Tamarac Sports Complex including a new inclusive playground, a 0.5-mile outdoor fitness trail with exercise stations, shade sails, and park signage.',source:'BidSync / City of Tamarac Purchasing',url:'https://www.tamarac.org/302/Purchasing',addedAt:'2025-06-05'},
+  {id:'op-010',title:'Tropical Park Playground Replacement & Splash Zone',agency:'Miami-Dade County Parks, Recreation & Open Spaces',county:'miami-dade',rfpNumber:'RFP-2025-097-MDC',dueDate:'2025-07-25',type:'Splash Pad',value:'$980,000',description:'Full replacement of aging playground equipment and construction of a new splash zone at Tropical Park. Includes themed water play features, rubberized surfacing, shade structures, and electrical upgrades.',source:'Miami-Dade County Procurement / DemandStar',url:'https://www.miamidade.gov/procurement/solicitations.asp',addedAt:'2025-06-06'},
+  {id:'op-011',title:'Miami-Dade Schools Playground Equipment — Annual Contract',agency:'Miami-Dade County Public Schools',county:'miami-dade',rfpNumber:'ITB-25-2204-MT',dueDate:'2025-08-20',type:'Playground Equipment',value:'$1.2M',description:'Annual contract for supply, delivery, and installation of playground equipment across Miami-Dade County Public Schools. Multi-year award with renewal options; includes all hardware, safety surfacing, and warranty service.',source:'MDCPS Procurement / BidNet Direct',url:'https://www.dadeschools.net/procurement',addedAt:'2025-06-06'},
+  {id:'op-012',title:"Homestead Children's Sports Park — New Construction",agency:'City of Homestead',county:'miami-dade',rfpNumber:'RFP 2025-34-HMS',dueDate:'2025-08-28',type:'Sports Complex',value:'$2.1M',description:"New construction of a 4-acre children's sports park in Homestead including youth soccer fields, a T-ball complex, inline hockey rink, splash pad, playground, shade pavilions, and parking.",source:'City of Homestead Purchasing / MyFloridaMarketPlace',url:'https://www.cityofhomestead.com/215/Purchasing',addedAt:'2025-06-07'},
+  {id:'op-013',title:'Coral Gables Youth Athletic Park Renovation',agency:'City of Coral Gables',county:'miami-dade',rfpNumber:'IFB 2025-11-CG',dueDate:'2025-07-10',type:'Remodel/Upgrade',value:'$430,000',description:'Comprehensive renovation of the Youth Athletic Park including replacement of playground structures, resurfacing of tennis and basketball courts, new park lighting, irrigation, and landscaping.',source:'City of Coral Gables Purchasing / BidSync',url:'https://www.coralgables.com/departments/finance/procurement',addedAt:'2025-06-07'},
+  {id:'op-014',title:'Playground & Park Equipment Maintenance — Annual Contract',agency:'Broward County Parks & Recreation',county:'broward',rfpNumber:'RFQ-B-2025-202',dueDate:'2025-06-30',type:'Maintenance Contract',value:'$220,000/yr',description:'Annual maintenance contract covering inspection, repair, and parts replacement for playground equipment and park amenities across 30+ Broward County parks. Multi-year renewal with performance benchmarks.',source:'Broward County Purchasing / DemandStar',url:'https://www.broward.org/Purchasing/Pages/Current-Solicitations.aspx',addedAt:'2025-06-08'},
+  {id:'op-015',title:'West Palm Beach Skate Park & Youth Recreation Expansion',agency:'City of West Palm Beach',county:'palm-beach',rfpNumber:'RFP-WPB-2025-055',dueDate:'2025-09-15',type:'Design/Build',value:'$1.65M',description:'Design-build of a new youth recreation campus at Howard Park including a concrete skate park, climbing wall, splash pad, inclusive playground, restroom facility, and shade pavilion.',source:'City of West Palm Beach Purchasing / BidNet Direct',url:'https://www.wpb.org/government/departments/finance/purchasing',addedAt:'2025-06-08'}
+];
+
+let state = { ops: [], decisions: {}, notes: {}, archived: {} };
+let activeFilter = 'all';
+let archiveMode = false;
+let editingId = null;
+
+function loadState() {
+  // Decisions, notes, and user-added (custom-*) ops come from localStorage.
+  // Scraped bids always come fresh from bids_data.js — never stored in localStorage.
+  let customOps = [];
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state.decisions = parsed.decisions || {};
+      state.notes     = parsed.notes     || {};
+      state.archived  = parsed.archived  || {};
+      customOps = (parsed.ops || []).filter(o => o.id && o.id.startsWith('custom-'));
+    }
+  } catch(e) {}
+
+  // Load scraped bids from bids_data.js (prepended before any custom-added ones)
+  if (window.SCRAPED_BIDS && Array.isArray(window.SCRAPED_BIDS.bids) && window.SCRAPED_BIDS.bids.length > 0) {
+    const customIds = new Set(customOps.map(o => o.id));
+    const freshScraped = window.SCRAPED_BIDS.bids.filter(b => !customIds.has(b.id));
+    state.ops = [...freshScraped, ...customOps];
+    // Show scrape info bar
+    const meta = window.SCRAPED_BIDS.metadata || {};
+    const bar = document.getElementById('scrape-bar');
+    if (bar) {
+      const ts = meta.last_updated ? new Date(meta.last_updated).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}) : 'unknown';
+      const errNote = (meta.errors && meta.errors.length) ? ` · <span style="color:var(--amber-text)">${meta.errors.length} portal error(s)</span>` : '';
+      bar.innerHTML = `<span><strong>${freshScraped.length}</strong> live results from scrape_bids.py &nbsp;·&nbsp; Last scraped: <strong>${ts}</strong>${errNote}</span><span style="color:var(--text3)">Refresh page after each scrape run to reload</span>`;
+      bar.style.display = 'flex';
+    }
+  } else {
+    // bids_data.js not available — show any custom-added bids or fallback placeholders
+    state.ops = customOps.length ? customOps : DEFAULT_OPS;
+  }
+}
+
+function saveState() {
+  try {
+    // Only persist manually-added (custom-*) bids; scraped ones reload from bids_data.js
+    const toSave = {
+      ops: state.ops.filter(o => o.id && o.id.startsWith('custom-')),
+      decisions: state.decisions,
+      notes: state.notes,
+      archived: state.archived,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  } catch(e) {}
+}
+
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = type === 'red' ? 'var(--red-bg)' : 'var(--green-bg)';
+  t.style.borderColor = type === 'red' ? 'var(--red-border)' : 'var(--green-border)';
+  t.style.color = type === 'red' ? 'var(--red-text)' : 'var(--green-text)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function daysUntil(ds) {
+  if (!ds) return 999;
+  const d = new Date(ds), now = new Date();
+  now.setHours(0,0,0,0); d.setHours(0,0,0,0);
+  return Math.ceil((d - now) / 86400000);
+}
+
+function fmtDate(isoStr) {
+  if (!isoStr) return '';
+  const d = new Date(isoStr + 'T12:00:00');
+  return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+
+function dlPill(days, ds) {
+  if (!ds) return '';
+  const d = new Date(ds);
+  const fmt = d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  if (days < 0) return `<span class="deadline-pill dl-hot">Expired ${fmt}</span>`;
+  if (days === 0) return `<span class="deadline-pill dl-hot">Due TODAY</span>`;
+  if (days === 1) return `<span class="deadline-pill dl-hot">Due TOMORROW — ${fmt}</span>`;
+  if (days <= 7) return `<span class="deadline-pill dl-hot">${days} days — ${fmt}</span>`;
+  if (days <= 14) return `<span class="deadline-pill dl-soon">${days} days — ${fmt}</span>`;
+  return `<span class="deadline-pill dl-ok">${fmt}</span>`;
+}
+
+function parseVal(v) {
+  if (!v) return 0;
+  const n = parseFloat(v.replace(/[^0-9.]/g,''));
+  if (v.includes('M')) return n * 1e6;
+  if (v.includes('K')) return n * 1e3;
+  return n || 0;
+}
+
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function decide(id, val) {
+  state.decisions[id] = state.decisions[id] === val ? null : val;
+  saveState();
+  updateStats();
+  render();
+  const labels = {yes:'✓ Marked as Yes!', no:'✕ Passed on this one', maybe:'~ Saved as Maybe'};
+  if (state.decisions[id]) toast(labels[state.decisions[id]]);
+}
+
+function saveNote(id) {
+  const el = document.getElementById('note-' + id);
+  if (!el) return;
+  state.notes[id] = el.value;
+  saveState();
+  const dot = document.getElementById('dot-' + id);
+  if (dot) { dot.classList.add('show'); setTimeout(() => dot.classList.remove('show'), 1800); }
+}
+
+function updateStats() {
+  const active = state.ops.filter(o => !state.archived[o.id]);
+  document.getElementById('s-total').textContent = active.length;
+  document.getElementById('s-yes').textContent   = active.filter(o => state.decisions[o.id] === 'yes').length;
+  document.getElementById('s-maybe').textContent = active.filter(o => state.decisions[o.id] === 'maybe').length;
+  document.getElementById('s-no').textContent    = active.filter(o => state.decisions[o.id] === 'no').length;
+  const hot = active.filter(o => { const d = daysUntil(o.dueDate); return d >= 0 && d <= 14; }).length;
+  document.getElementById('s-hot').textContent = hot;
+
+  const archCount = state.ops.filter(o => state.archived[o.id]).length;
+  const archBadge = document.getElementById('arch-count');
+  if (archBadge) archBadge.textContent = archCount;
+
+  const hot7 = active.filter(o => { const d = daysUntil(o.dueDate); return d >= 0 && d <= 7; });
+  const alertArea = document.getElementById('alert-area');
+  if (hot7.length) {
+    alertArea.innerHTML = `<div class="alert-banner alert-urgent">⚠️ <strong>${hot7.length} opportunit${hot7.length > 1 ? 'ies' : 'y'} closing within 7 days:</strong>&nbsp;${hot7.map(o => o.rfpNumber || o.title.substring(0,30)).join(' · ')}</div>`;
+  } else {
+    alertArea.innerHTML = '';
+  }
+}
+
+function archiveBid(id) {
+  state.archived[id] = true;
+  saveState();
+  updateStats();
+  render();
+  toast('Moved to archive');
+}
+
+function unarchiveBid(id) {
+  delete state.archived[id];
+  saveState();
+  updateStats();
+  render();
+  toast('Restored to board', 'green');
+}
+
+function toggleArchive() {
+  archiveMode = !archiveMode;
+  render();
+}
+
+function archiveAllExpired() {
+  let count = 0;
+  state.ops.forEach(o => {
+    if (!state.archived[o.id] && o.dueDate && daysUntil(o.dueDate) < 0) {
+      state.archived[o.id] = true;
+      count++;
+    }
+  });
+  saveState();
+  updateStats();
+  render();
+  toast(count ? `${count} expired bid${count !== 1 ? 's' : ''} archived` : 'No expired bids to archive');
+}
+
+function render() {
+  const q = (document.getElementById('srch').value || '').toLowerCase();
+  const sort = document.getElementById('sort-sel').value;
+
+  // Archive mode shows only archived bids; normal mode hides them
+  document.getElementById('archive-banner').style.display = archiveMode ? 'flex' : 'none';
+  const archBtn = document.getElementById('archive-toggle-btn');
+  if (archBtn) archBtn.classList.toggle('active', archiveMode);
+
+  let list;
+  if (archiveMode) {
+    list = state.ops.filter(o => state.archived[o.id]);
+  } else {
+    list = state.ops.filter(o => !state.archived[o.id]).filter(o => {
+      if (activeFilter === 'yes') return state.decisions[o.id] === 'yes';
+      if (activeFilter === 'no') return state.decisions[o.id] === 'no';
+      if (activeFilter === 'maybe') return state.decisions[o.id] === 'maybe';
+      if (activeFilter === 'undecided') return !state.decisions[o.id];
+      if (activeFilter === 'hot') { const d = daysUntil(o.dueDate); return d >= 0 && d <= 14; }
+      if (activeFilter === 'mandatory-prebid') return o.preBidMandatory === true;
+      if (activeFilter === 'prebid-week') { const d = daysUntil(o.preBidDate || ''); return d >= 0 && d <= 7; }
+      if (activeFilter === 'rfi-soon') { const d = daysUntil(o.rfiDeadline || ''); return d >= 0 && d <= 7; }
+      if (['palm-beach','broward','miami-dade'].includes(activeFilter)) return o.county === activeFilter;
+      return true;
+    });
+  }
+  list = list.filter(o => !q || (o.title + o.agency + o.description + o.type + (o.rfpNumber||'')).toLowerCase().includes(q));
+
+  if (sort === 'deadline') list.sort((a,b) => daysUntil(a.dueDate) - daysUntil(b.dueDate));
+  else if (sort === 'deadline-latest') list.sort((a,b) => daysUntil(b.dueDate) - daysUntil(a.dueDate));
+  else if (sort === 'value') list.sort((a,b) => parseVal(b.value) - parseVal(a.value));
+  else if (sort === 'county') list.sort((a,b) => a.county.localeCompare(b.county));
+  else if (sort === 'added') list.sort((a,b) => (b.addedAt||'').localeCompare(a.addedAt||''));
+  else if (sort === 'prebid') list.sort((a,b) => daysUntil(a.preBidDate||'') - daysUntil(b.preBidDate||''));
+  else if (sort === 'rfi') list.sort((a,b) => daysUntil(a.rfiDeadline||'') - daysUntil(b.rfiDeadline||''));
+
+  const board = document.getElementById('board');
+  if (!list.length) {
+    board.innerHTML = archiveMode
+      ? '<div class="empty">Archive is empty.<br><small>Click "Archive" on any bid card, or use "Archive all expired" above.</small></div>'
+      : '<div class="empty">No opportunities match this filter.<br><small>Try clearing the search or changing the filter.</small></div>';
+    return;
+  }
+
+  board.innerHTML = list.map(o => {
+    const dec = state.decisions[o.id] || null;
+    const days = daysUntil(o.dueDate);
+    const countyBadge = {'palm-beach':'badge-pb','broward':'badge-br','miami-dade':'badge-md'};
+    return `<div class="card${dec ? ' dec-' + dec : ''}${archiveMode ? ' card-archived' : ''}" id="card-${o.id}">
+  <div class="card-top">
+    <div class="card-title">${o.title}</div>
+    <div class="badges">
+      ${days >= 0 && days <= 7 ? '<span class="badge badge-hot">🔥 Hot — closing soon</span>' : days >= 0 && days <= 14 ? '<span class="badge badge-soon">Closing soon</span>' : '<span class="badge badge-open">Open</span>'}
+      <span class="badge ${countyBadge[o.county]}">${CN[o.county]}</span>
+    </div>
+  </div>
+  <div class="card-meta">
+    <span class="meta"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>${o.agency}</span>
+    <span class="meta"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${dlPill(days, o.dueDate)}</span>
+    <span class="meta"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>${o.type}</span>
+    ${o.value ? `<span class="meta"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>${o.value}</span>` : ''}
+    ${o.rfpNumber ? `<span class="meta"><svg class="icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>${o.rfpNumber}</span>` : ''}
+  </div>
+  <div class="card-dates">
+    <div class="date-row">
+      <span class="date-lbl">Pre-Bid</span>
+      <span class="date-val">${o.preBidDate ? fmtDate(o.preBidDate) : '<span class="date-not-spec">Not specified</span>'}</span>
+      ${o.preBidMandatory === true ? '<span class="badge-mandatory">Mandatory</span>' : o.preBidMandatory === false ? '<span class="badge-optional">Optional</span>' : ''}
+    </div>
+    <div class="date-row">
+      <span class="date-lbl">RFI Deadline</span>
+      <span class="date-val">${o.rfiDeadline ? fmtDate(o.rfiDeadline) : '<span class="date-not-spec">Not specified</span>'}</span>
+    </div>
+    ${(o.contactName || o.contactEmail) ? `<div class="date-row">
+      <span class="date-lbl">Contact</span>
+      <span class="date-val">${o.contactName ? o.contactName + (o.contactEmail ? ' &mdash; ' : '') : ''}${o.contactEmail ? `<a class="card-link" href="mailto:${o.contactEmail}">${o.contactEmail}</a>` : ''}</span>
+    </div>` : ''}
+  </div>
+  ${o.description ? `<div class="card-desc">${o.description}</div>` : ''}
+  ${o.source ? `<div class="card-source">Source: ${o.source}</div>` : ''}
+  <div class="card-actions">
+    <div class="dec-btns">
+      <button class="dec-btn${dec === 'yes' ? ' active-yes' : ''}" onclick="decide('${o.id}','yes')">✓ Yes</button>
+      <button class="dec-btn${dec === 'maybe' ? ' active-maybe' : ''}" onclick="decide('${o.id}','maybe')">~ Maybe</button>
+      <button class="dec-btn${dec === 'no' ? ' active-no' : ''}" onclick="decide('${o.id}','no')">✕ Pass</button>
+    </div>
+    <div class="card-links">
+      ${o.url ? `<a class="card-link" href="${o.url}" target="_blank"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>View RFP</a>` : ''}
+      ${!archiveMode ? `<button class="dec-btn" onclick="openModal('${o.id}')"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit</button>` : ''}
+      ${archiveMode
+        ? `<button class="dec-btn active-maybe" onclick="unarchiveBid('${o.id}')"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg> Restore</button>`
+        : `<button class="dec-btn btn-archive" onclick="archiveBid('${o.id}')"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg> Archive</button>`
+      }
+    </div>
+  </div>
+  <div class="notes-row">
+    <div class="notes-lbl"><svg class="icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>My notes <span class="saved-dot" id="dot-${o.id}"></span></div>
+    <textarea class="notes-input" id="note-${o.id}" placeholder="Team, strategy, contact, pricing thoughts, pre-bid meeting info..." oninput="saveNote('${o.id}')">${state.notes[o.id] || ''}</textarea>
+  </div>
+</div>`;
+  }).join('');
+
+  document.getElementById('last-upd').textContent = `${list.length} of ${state.ops.length} opportunities shown · Last opened: ${new Date().toLocaleString('en-US', {month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}`;
+}
+
+function openModal(editId) {
+  editingId = editId || null;
+  const modal = document.getElementById('modal-overlay');
+  const title = document.getElementById('modal-title');
+  const saveBtn = document.getElementById('modal-save-btn');
+  const deleteBtn = document.getElementById('modal-delete-btn');
+
+  if (editId) {
+    const op = state.ops.find(o => o.id === editId);
+    if (!op) return;
+    title.textContent = 'Edit opportunity';
+    saveBtn.textContent = 'Save changes';
+    deleteBtn.classList.remove('hidden');
+    document.getElementById('f-title').value = op.title || '';
+    document.getElementById('f-agency').value = op.agency || '';
+    document.getElementById('f-county').value = op.county || 'palm-beach';
+    document.getElementById('f-rfp').value = op.rfpNumber || '';
+    document.getElementById('f-due').value = op.dueDate || '';
+    document.getElementById('f-type').value = op.type || 'Playground Equipment';
+    document.getElementById('f-value').value = op.value || '';
+    document.getElementById('f-desc').value = op.description || '';
+    document.getElementById('f-source').value = op.source || '';
+    document.getElementById('f-url').value = op.url || '';
+  } else {
+    title.textContent = 'Add new opportunity';
+    saveBtn.textContent = 'Save opportunity';
+    deleteBtn.classList.add('hidden');
+    ['f-title','f-agency','f-rfp','f-value','f-desc','f-source','f-url'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-county').value = 'palm-beach';
+    document.getElementById('f-type').value = 'Playground Equipment';
+    document.getElementById('f-due').value = '';
+  }
+  modal.classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+  editingId = null;
+}
+
+function closeModalIfBg(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function saveOpportunity() {
+  const title = document.getElementById('f-title').value.trim();
+  const agency = document.getElementById('f-agency').value.trim();
+  const dueDate = document.getElementById('f-due').value;
+  if (!title || !agency || !dueDate) { toast('Title, agency, and deadline are required.', 'red'); return; }
+
+  const op = {
+    id: editingId || 'custom-' + Date.now(),
+    title,
+    agency,
+    county: document.getElementById('f-county').value,
+    rfpNumber: document.getElementById('f-rfp').value.trim(),
+    dueDate,
+    type: document.getElementById('f-type').value,
+    value: document.getElementById('f-value').value.trim(),
+    description: document.getElementById('f-desc').value.trim(),
+    source: document.getElementById('f-source').value.trim(),
+    url: document.getElementById('f-url').value.trim(),
+    addedAt: new Date().toISOString()
+  };
+
+  if (editingId) {
+    const idx = state.ops.findIndex(o => o.id === editingId);
+    if (idx >= 0) state.ops[idx] = op;
+    toast('Opportunity updated!');
+  } else {
+    state.ops.unshift(op);
+    toast('Opportunity added!');
+  }
+
+  saveState();
+  closeModal();
+  updateStats();
+  render();
+}
+
+function deleteOpportunity() {
+  if (!editingId) return;
+  if (!confirm('Delete this opportunity? This cannot be undone.')) return;
+  state.ops = state.ops.filter(o => o.id !== editingId);
+  delete state.decisions[editingId];
+  delete state.notes[editingId];
+  saveState();
+  closeModal();
+  updateStats();
+  render();
+  toast('Opportunity deleted.');
+}
+
+function exportCSV() {
+  const hdrs = ['Title','Agency','County','RFP Number','Due Date','Type','Value','Decision','Notes','Source','URL'];
+  const rows = state.ops.map(o => [
+    o.title, o.agency, CN[o.county] || o.county, o.rfpNumber || '', o.dueDate, o.type, o.value || '',
+    state.decisions[o.id] || 'Undecided',
+    (state.notes[o.id] || '').replace(/\n/g,' ').replace(/"/g,"'"),
+    o.source || '', o.url || ''
+  ].map(v => `"${v}"`).join(','));
+  const csv = [hdrs.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = 'sfla-bid-board-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  toast('CSV exported!');
+}
+
+function exportYes() {
+  const list = state.ops.filter(o => state.decisions[o.id] === 'yes');
+  if (!list.length) { toast('No Yes bids yet!', 'red'); return; }
+  const lines = list.map(o =>
+    `${o.title}\n${o.rfpNumber || 'No RFP#'} | ${o.agency} | ${CN[o.county]}\nDeadline: ${o.dueDate} | ${o.type}${o.value ? ' | ' + o.value : ''}\n${o.description || ''}\nSource: ${o.source || 'N/A'}\nURL: ${o.url || 'N/A'}\nNotes: ${state.notes[o.id] || '(none)'}`
+  ).join('\n\n' + '─'.repeat(50) + '\n\n');
+  const txt = `SOUTH FLORIDA BID BOARD — YES LIST\nExported: ${new Date().toLocaleDateString()}\n${'═'.repeat(50)}\n\n${lines}`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt], {type:'text/plain'}));
+  a.download = 'bid-yes-list-' + new Date().toISOString().slice(0,10) + '.txt';
+  a.click();
+  toast('Yes list exported!');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+loadState();
+updateStats();
+render();
+</script>
+</body>
+</html>

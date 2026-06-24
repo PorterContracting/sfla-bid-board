@@ -1,0 +1,11 @@
+# Never publish credentials
+credentials.json
+
+# Raw JSON archive (bids_data.js is the one the site uses)
+bids_data.json
+
+# Windows / editor junk
+Thumbs.db
+desktop.ini
+.DS_Store
+*.tmp
