@@ -762,6 +762,13 @@ function exportYes() {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 loadState();
+// Silently archive any bids whose due date has already passed
+state.ops.forEach(o => {
+  if (!state.archived[o.id] && o.dueDate && daysUntil(o.dueDate) < 0) {
+    state.archived[o.id] = true;
+  }
+});
+saveState();
 updateStats();
 render();
 </script>
