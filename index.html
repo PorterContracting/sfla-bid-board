@@ -85,6 +85,8 @@
   .badge-pb { background: var(--pb-bg); color: var(--pb-text); }
   .badge-br { background: var(--br-bg); color: var(--br-text); }
   .badge-md { background: var(--md-bg); color: var(--md-text); }
+  .badge-bond { background: var(--amber-bg); border: 1px solid var(--amber-border); color: var(--amber-text); }
+  .badge-no-bond { background: var(--green-bg); border: 1px solid var(--green-border); color: var(--green-text); }
   .card-meta { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 8px; }
   .meta { font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 5px; }
   .meta svg { opacity: 0.6; flex-shrink: 0; }
@@ -214,6 +216,28 @@
       <a class="src-chip" href="https://www.miamidade.gov/parks" target="_blank">&#x2197; Miami-Dade Parks Dept</a>
       <a class="src-chip" href="https://discover.pbcgov.org/parks" target="_blank">&#x2197; Palm Beach County Parks</a>
       <a class="src-chip" href="https://www.broward.org/Parks/Pages/Default.aspx" target="_blank">&#x2197; Broward County Parks</a>
+      <a class="src-chip" href="https://procurement.opengov.com/portal/pbgfl/project-list" target="_blank">&#x2197; Palm Beach Gardens</a>
+      <a class="src-chip" href="https://procurement.opengov.com/portal/coralsprings/project-list" target="_blank">&#x2197; Coral Springs</a>
+      <a class="src-chip" href="https://procurement.opengov.com/portal/pembrokepines/project-list" target="_blank">&#x2197; Pembroke Pines</a>
+      <a class="src-chip" href="https://procurement.opengov.com/portal/davie-fl/project-list" target="_blank">&#x2197; Town of Davie</a>
+      <a class="src-chip" href="https://procurement.opengov.com/portal/pompanobeach/project-list" target="_blank">&#x2197; Pompano Beach</a>
+      <a class="src-chip" href="https://procurement.opengov.com/portal/cityofhialeahfl/project-list" target="_blank">&#x2197; City of Hialeah</a>
+      <a class="src-chip" href="https://www.bidnetdirect.com/florida/cityofmiami" target="_blank">&#x2197; City of Miami (BidNet)</a>
+      <a class="src-chip" href="https://www.bidnetdirect.com/florida/cityofmiamibeach" target="_blank">&#x2197; City of Miami Beach</a>
+      <a class="src-chip" href="https://procurementcalendar.apps.sfwmd.gov/" target="_blank">&#x2197; SFWMD Procurement</a>
+      <a class="src-chip" href="https://www.plantation.org/government/departments/procurement/bids" target="_blank">&#x2197; City of Plantation</a>
+      <a class="src-chip" href="https://www.fortlauderdale.gov/departments/finance-and-budget/purchasing/bid-opportunities" target="_blank">&#x2197; City of Fort Lauderdale</a>
+      <a class="src-chip" href="https://www.browardhealth.org/vendor/current-opportunities" target="_blank">&#x2197; Broward Health</a>
+      <a class="src-chip" href="https://jacksonhealth.org/administrative/vendors-procurement/" target="_blank">&#x2197; Jackson Health</a>
+      <a class="src-chip" href="https://www.wpbha.org/solicitations-ifbs-rfps-and-rfqs" target="_blank">&#x2197; WPB Housing Authority</a>
+      <a class="src-chip" href="https://www.pbchafl.org/current-bids-and-solicitations/" target="_blank">&#x2197; PBC Housing Authority</a>
+      <a class="src-chip" href="https://vrapp.vendorregistry.com/Bids/View/BidsList?buyerId=fa7c46a4-0264-4ed8-a964-aa745868d2ca" target="_blank">&#x2197; Broward Housing Authority</a>
+      <a class="src-chip" href="https://www.delraybeachfl.gov/business/bids-and-solicitations" target="_blank">&#x2197; City of Delray Beach</a>
+      <a class="src-chip" href="https://boynton-beach.bidsandtenders.net/" target="_blank">&#x2197; City of Boynton Beach</a>
+      <a class="src-chip" href="https://www.wellington.fl.us/Bids.aspx" target="_blank">&#x2197; City of Wellington</a>
+      <a class="src-chip" href="https://www.jupiter.fl.us/246/Bids-for-Town-Projects" target="_blank">&#x2197; Town of Jupiter</a>
+      <a class="src-chip" href="https://www.tri-rail.com/pages/view/solicitations-and-notices" target="_blank">&#x2197; Tri-Rail (SFRTA)</a>
+      <a class="src-chip" href="https://www.miamidade.gov/global/housing/requests.page" target="_blank">&#x2197; Miami-Dade Public Housing</a>
     </div>
   </div>
 
@@ -585,6 +609,7 @@ function render() {
     <div class="badges">
       ${days >= 0 && days <= 7 ? '<span class="badge badge-hot">🔥 Hot — closing soon</span>' : days >= 0 && days <= 14 ? '<span class="badge badge-soon">Closing soon</span>' : '<span class="badge badge-open">Open</span>'}
       <span class="badge ${countyBadge[o.county]}">${CN[o.county]}</span>
+      ${o.bidBondRequired === true ? `<span class="badge badge-bond">Bond: ${o.bidBondAmount || 'Required'}</span>` : o.bidBondRequired === false ? '<span class="badge badge-no-bond">No Bond</span>' : ''}
     </div>
   </div>
   <div class="card-meta">
@@ -597,16 +622,21 @@ function render() {
   <div class="card-dates">
     <div class="date-row">
       <span class="date-lbl">Pre-Bid</span>
-      <span class="date-val">${o.preBidDate ? fmtDate(o.preBidDate) : '<span class="date-not-spec">Not specified</span>'}</span>
+      <span class="date-val">${o.preBidDate ? fmtDate(o.preBidDate) + (o.preBidTime ? ' &nbsp;·&nbsp; ' + o.preBidTime : '') : '<span class="date-not-spec">Not specified</span>'}</span>
       ${o.preBidMandatory === true ? '<span class="badge-mandatory">Mandatory</span>' : o.preBidMandatory === false ? '<span class="badge-optional">Optional</span>' : ''}
     </div>
+    ${o.preBidLocation ? `<div class="date-row"><span class="date-lbl"></span><span class="date-val" style="font-size:11px;color:var(--text3);font-style:italic">${o.preBidLocation}</span></div>` : ''}
     <div class="date-row">
       <span class="date-lbl">RFI Deadline</span>
       <span class="date-val">${o.rfiDeadline ? fmtDate(o.rfiDeadline) : '<span class="date-not-spec">Not specified</span>'}</span>
     </div>
-    ${(o.contactName || o.contactEmail) ? `<div class="date-row">
+    <div class="date-row">
+      <span class="date-lbl">Bid Bond</span>
+      <span class="date-val">${o.bidBondRequired === true ? (o.bidBondAmount ? o.bidBondAmount + ' required' : 'Required') : o.bidBondRequired === false ? 'Not required' : '<span class="date-not-spec">Not specified</span>'}</span>
+    </div>
+    ${(o.contactName || o.contactEmail || o.contactPhone) ? `<div class="date-row">
       <span class="date-lbl">Contact</span>
-      <span class="date-val">${o.contactName ? o.contactName + (o.contactEmail ? ' &mdash; ' : '') : ''}${o.contactEmail ? `<a class="card-link" href="mailto:${o.contactEmail}">${o.contactEmail}</a>` : ''}</span>
+      <span class="date-val">${[o.contactName, o.contactPhone].filter(Boolean).join(' &nbsp;·&nbsp; ')}${o.contactEmail ? (o.contactName || o.contactPhone ? ' &mdash; ' : '') + '<a class="card-link" href="mailto:' + o.contactEmail + '">' + o.contactEmail + '</a>' : ''}</span>
     </div>` : ''}
   </div>
   ${o.description ? `<div class="card-desc">${o.description}</div>` : ''}
